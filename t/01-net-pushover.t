@@ -45,10 +45,18 @@ subtest 'methods test' => sub {
 
 # auth validation is required
 subtest 'auth validation fail test' => sub {
+  # token error
   eval{ $p->_auth_validation };
 
   ok $@;
-  like $@, qr#Auth params token/user are requireds!#;
+  like $@, qr#Error: token is undefined#;
+
+  # user error
+  $p->token('xxxxxxxxxx');
+  eval{ $p->_auth_validation };
+
+  ok $@;
+  like $@, qr#Error: user is undefined#;
 };
 
 

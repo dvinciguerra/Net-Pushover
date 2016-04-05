@@ -10,6 +10,8 @@ use Carp;
 use JSON;
 use LWP::UserAgent;
 
+# version
+our $VERSION = 0.021;
 
 # accessors
 has token => (is => 'rw');
@@ -27,15 +29,14 @@ has _ua   => (
 
 # methods
 sub message {
-  my $self = shift;
-  my $args = @_ % 2 == 0? {@_} : undef;
+  my ($self, $args) = (shift, {@_});
 
   # auth validation
   $self->_auth_validation;
 
   # required fields
   Carp::confess("Field text is required for message body")
-    unless $args && $args->{text};
+    unless  $args->{text};
 
   $args->{user}    = $self->user;
   $args->{token}   = $self->token;
@@ -43,7 +44,7 @@ sub message {
 
   # sending data
   my $res = $self->_ua->post(
-    'https://api.pushover.net/1/messages.json', $args || {}
+    'https://api.pushover.net/1/messages.json', $args
   );
 
   return JSON::decode_json($res->decoded_content)
@@ -53,9 +54,10 @@ sub _auth_validation {
   my $self = shift;
 
   # auth exception
-  return 1 if $self->token && $self->user;
+  Carp::confess("Error: token is undefined") unless $self->token;
+  Carp::confess("Error: user is undefined") unless $self->user;
 
-  Carp::confess('Auth params token/user are requireds!')
+  return 1;
 }
 
 1;
